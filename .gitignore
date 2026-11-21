@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Documentos compilados (o PDF final nao e versionado)
+*.pdf
+
+# Resultados grandes gerados pelas analises
+# (as pastas resultados/ ficam no repo via .gitkeep, mas os arquivos nao)
+analitico/resultados/*
+monte_carlo/resultados/*
+sensibilidade/resultados/*
+!analitico/resultados/.gitkeep
+!monte_carlo/resultados/.gitkeep
+!sensibilidade/resultados/.gitkeep
+*.npy
+*.npz
+*.parquet
+
+# Sistema operacional / editores
+.DS_Store
+.vscode/
+.idea/

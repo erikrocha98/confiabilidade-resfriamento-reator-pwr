@@ -1,0 +1,168 @@
+# Arvore de falhas do CCWS (Component Cooling Water System) - reator PWR Westinghouse.
+#
+# Responsabilidade da frente 1 (modelo). A LOGICA DESTE ARQUIVO NAO DEVE SER ALTERADA
+# pelas outras frentes: mudancas aqui invalidam cortes minimos, probabilidade do topo,
+# Monte Carlo e os cenarios de sensibilidade.
+#
+# Convencoes:
+#   - "portas" descreve cada porta logica: tipo (AND/OR) e lista de entradas.
+#   - Uma entrada pode ser outra porta ou um evento basico.
+#   - "eventos_basicos" lista os eventos folha; o id e a chave usada tambem na
+#     coluna id_evento de dados/parametros_eventos.csv.
+#   - X = A ou B identifica o trem redundante.
+
+nome: Perda da funcao de resfriamento do CCWS
+evento_topo: TOPO
+
+portas:
+  # O sistema so perde a funcao se os DOIS trens falharem (redundancia 1 de 2).
+  TOPO:
+    tipo: AND
+    descricao: Perda da funcao de resfriamento do CCWS
+    entradas: [TREM_A, TREM_B]
+
+  # ---------------------------------------------------------------- Trem A
+  TREM_A:
+    tipo: OR
+    descricao: Falha do trem A do CCWS
+    entradas: [INSTRUMENTACAO_A, STF_A, BOMBAS_A, PIPE_A, VALVULAS_A, HTX_A]
+
+  INSTRUMENTACAO_A:
+    tipo: OR
+    descricao: Falha de instrumentacao do trem A
+    entradas: [STL_A, STP_A, STT_A]
+
+  VALVULAS_A:
+    tipo: OR
+    descricao: Falha de valvulas do trem A
+    entradas: [MOV_A, XVM_A, CKV_A, FCV_A]
+
+  # Duas bombas por trem: o trem so perde bombeamento se as duas falharem.
+  BOMBAS_A:
+    tipo: AND
+    descricao: Falha das bombas do trem A
+    entradas: [MDP_A, MDP_C]
+
+  # ---------------------------------------------------------------- Trem B
+  TREM_B:
+    tipo: OR
+    descricao: Falha do trem B do CCWS
+    entradas: [INSTRUMENTACAO_B, STF_B, BOMBAS_B, PIPE_B, VALVULAS_B, HTX_B]
+
+  INSTRUMENTACAO_B:
+    tipo: OR
+    descricao: Falha de instrumentacao do trem B
+    entradas: [STL_B, STP_B, STT_B]
+
+  VALVULAS_B:
+    tipo: OR
+    descricao: Falha de valvulas do trem B
+    entradas: [MOV_B, XVM_B, CKV_B, FCV_B]
+
+  BOMBAS_B:
+    tipo: AND
+    descricao: Falha das bombas do trem B
+    entradas: [MDP_B, MDP_D]
+
+eventos_basicos:
+  # ---------------------------------------------------------------- Trem A
+  - id: STL_A
+    componente: STL
+    trem: A
+    descricao: Falha de chave/transmissor de nivel do trem A
+  - id: STP_A
+    componente: STP
+    trem: A
+    descricao: Falha de chave/transmissor de pressao do trem A
+  - id: STT_A
+    componente: STT
+    trem: A
+    descricao: Falha de chave/transmissor de temperatura do trem A
+  - id: STF_A
+    componente: STF
+    trem: A
+    descricao: Falha de chave/transmissor de vazao do trem A
+  - id: PIPE_A
+    componente: PIPE
+    trem: A
+    descricao: Falha de tubulacao do trem A
+  - id: MOV_A
+    componente: MOV
+    trem: A
+    descricao: Falha de valvula motorizada do trem A
+  - id: XVM_A
+    componente: XVM
+    trem: A
+    descricao: Falha de valvula manual do trem A
+  - id: CKV_A
+    componente: CKV
+    trem: A
+    descricao: Falha de valvula de retencao do trem A
+  - id: FCV_A
+    componente: FCV
+    trem: A
+    descricao: Falha de valvula de controle de vazao do trem A
+  - id: HTX_A
+    componente: HTX
+    trem: A
+    descricao: Falha do trocador de calor do trem A
+
+  # ---------------------------------------------------------------- Trem B
+  - id: STL_B
+    componente: STL
+    trem: B
+    descricao: Falha de chave/transmissor de nivel do trem B
+  - id: STP_B
+    componente: STP
+    trem: B
+    descricao: Falha de chave/transmissor de pressao do trem B
+  - id: STT_B
+    componente: STT
+    trem: B
+    descricao: Falha de chave/transmissor de temperatura do trem B
+  - id: STF_B
+    componente: STF
+    trem: B
+    descricao: Falha de chave/transmissor de vazao do trem B
+  - id: PIPE_B
+    componente: PIPE
+    trem: B
+    descricao: Falha de tubulacao do trem B
+  - id: MOV_B
+    componente: MOV
+    trem: B
+    descricao: Falha de valvula motorizada do trem B
+  - id: XVM_B
+    componente: XVM
+    trem: B
+    descricao: Falha de valvula manual do trem B
+  - id: CKV_B
+    componente: CKV
+    trem: B
+    descricao: Falha de valvula de retencao do trem B
+  - id: FCV_B
+    componente: FCV
+    trem: B
+    descricao: Falha de valvula de controle de vazao do trem B
+  - id: HTX_B
+    componente: HTX
+    trem: B
+    descricao: Falha do trocador de calor do trem B
+
+  # ---------------------------------------------------------------- Bombas
+  - id: MDP_A
+    componente: MDP
+    trem: A
+    descricao: Falha da bomba motriz A (trem A)
+  - id: MDP_C
+    componente: MDP
+    trem: A
+    descricao: Falha da bomba motriz C (trem A)
+  - id: MDP_B
+    componente: MDP
+    trem: B
+    descricao: Falha da bomba motriz B (trem B)
+  - id: MDP_D
+    componente: MDP
+    trem: B
+    descricao: Falha da bomba motriz D (trem B)

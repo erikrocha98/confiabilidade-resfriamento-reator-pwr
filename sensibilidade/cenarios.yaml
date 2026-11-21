@@ -1,0 +1,87 @@
+# Frente 5 - Cenarios de analise de sensibilidade.
+#
+# Cada cenario descreve uma alteracao controlada em relacao ao caso base
+# (parametros de dados/parametros_eventos.csv e config/parametros_globais.yaml).
+# NENHUM valor numerico de taxa ou probabilidade deve ser escrito aqui: os
+# cenarios trabalham com FATORES MULTIPLICATIVOS sobre os valores do caso base,
+# ou com variacao do tempo de missao.
+#
+# Formato de cada cenario:
+#   id:              identificador curto, usado nos nomes dos arquivos de saida
+#   descricao:       o que o cenario representa fisicamente
+#   tipo:            fator_evento | fator_componente | tempo_missao | indisponibilidade
+#   alvo:            id de evento basico, sigla de componente, ou "-" quando nao se aplica
+#   fator:           multiplicador aplicado ao parametro do caso base (vazio quando nao se aplica)
+#   tempo_missao_h:  tempo de missao do cenario (vazio = usar o da configuracao global)
+#   observacao:      ressalvas e justificativa da escolha
+#
+# Os cenarios abaixo sao modelos (templates) definidos pela frente 5. Os valores
+# de "fator" ainda precisam ser escolhidos e justificados no relatorio.
+
+caso_base:
+  descricao: >
+    Parametros como extraidos dos relatorios do INL e tempo de missao da
+    configuracao global. Referencia de comparacao de todos os cenarios.
+
+cenarios:
+  - id: evento_mais_importante_agravado
+    descricao: >
+      Agrava o parametro do evento basico de maior importancia (ranking de
+      Fussell-Vesely vindo de analitico/resultados/importancias.csv).
+    tipo: fator_evento
+    alvo: "[definir a partir do ranking de importancia]"
+    fator: # TODO frente 5: escolher o multiplicador (ex.: 10x) e justificar
+    tempo_missao_h:
+    observacao: Mede o quanto o resultado depende do evento dominante.
+
+  - id: evento_mais_importante_melhorado
+    descricao: Mesma escolha do cenario anterior, mas melhorando o parametro.
+    tipo: fator_evento
+    alvo: "[definir a partir do ranking de importancia]"
+    fator: # TODO frente 5
+    tempo_missao_h:
+    observacao: Estima o ganho maximo de uma acao de manutencao focada.
+
+  - id: bombas_degradadas
+    descricao: Degrada o parametro de falha de todas as bombas motrizes (MDP).
+    tipo: fator_componente
+    alvo: MDP
+    fator: # TODO frente 5
+    tempo_missao_h:
+    observacao: Afeta as quatro bombas simultaneamente (MDP_A a MDP_D).
+
+  - id: valvulas_degradadas
+    descricao: Degrada o parametro das valvulas (MOV, XVM, CKV, FCV) dos dois trens.
+    tipo: fator_componente
+    alvo: MOV;XVM;CKV;FCV
+    fator: # TODO frente 5
+    tempo_missao_h:
+    observacao: Grupo com muitos eventos em serie (porta OR) por trem.
+
+  - id: missao_curta
+    descricao: Reduz o tempo de missao em relacao ao caso base.
+    tipo: tempo_missao
+    alvo: "-"
+    fator:
+    tempo_missao_h: # TODO frente 5: ex. 8 h
+    observacao: Mostra a sensibilidade ao horizonte de analise.
+
+  - id: missao_longa
+    descricao: Amplia o tempo de missao em relacao ao caso base.
+    tipo: tempo_missao
+    alvo: "-"
+    fator:
+    tempo_missao_h: # TODO frente 5: ex. 72 h
+    observacao: Verifica se algum evento passa a dominar em missoes longas.
+
+  - id: trem_b_indisponivel
+    descricao: >
+      Trem B indisponivel (manutencao programada). Equivale a forcar a falha do
+      trem B, deixando o sistema sem redundancia.
+    tipo: indisponibilidade
+    alvo: TREM_B
+    fator:
+    tempo_missao_h:
+    observacao: >
+      Cenario de configuracao de planta, nao de parametro. Com o topo em AND,
+      a probabilidade do topo passa a ser a probabilidade de falha do trem A.

@@ -1,0 +1,11 @@
+# Parametros globais do estudo de confiabilidade do CCWS.
+# Todas as frentes (3, 4 e 5) devem ler estes valores daqui, nunca fixa-los no codigo.
+
+# Tempo de missao considerado na analise, em horas.
+tempo_missao_h: 24
+
+# Numero de historias (replicacoes) da simulacao de Monte Carlo.
+n_simulacoes: 1000000
+
+# Semente do gerador de numeros aleatorios, para que os resultados sejam reproduziveis.
+semente_aleatoria: 20262
