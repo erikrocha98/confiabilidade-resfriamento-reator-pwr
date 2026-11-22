@@ -10,7 +10,7 @@
 | `AvgPara2020_p001-100.pdf` (parte 1) | ✅ concluída | "Extração: parte 1" |
 | `AvgPara2020_p101-200.pdf` (parte 2) | ✅ concluída | "Extração: parte 2" |
 | `AvgPara2020_p201-235.pdf` (parte 3) | ⏭️ pulada (só eventos iniciadores, ver mapa) | — |
-| `ccfparamest2020rev1_*` (fatores alfa) | ⏳ **próxima** (Etapa 4, passo 3) | — |
+| `ccfparamest2020rev1_*` (fatores alfa) | ✅ concluída (Etapa 4): PDF 164–168 | — |
 
 ## Método
 
@@ -108,8 +108,18 @@ water, e os demais componentes das páginas lidas.
 
 **124 linhas** em `extracao_bruta.csv`: 102 da parte 1 e 22 da parte 2. A parte 3 foi pulada.
 
+## Etapa 4 (concluída)
+
+- Os fatores alfa vieram do CCF, seção 2.1.11, com CCCG = 4: `CCW-MDP-FS` (PDF 164) e
+  `CCW-MDP-FR` (PDF 167). Foram cruzados com a tabela-resumo de cada seção (PDF 165 e 168).
+  Isso acrescentou 8 linhas a `extracao_bruta.csv`, com a distribuição Beta de cada α, e
+  2 linhas a `fatores_alfa_ccf.csv`.
+- Partes do CCF que não precisaram ser lidas: a parte 1 (a alternativa genérica 2.1.1 não foi
+  necessária, porque existe a versão do CCW) e as partes 3, 4 e 5.
+- `parametros_eventos.csv` foi montado com `scripts/montar_parametros.py` e tem 24 eventos.
+  As suposições estão em `dados/README.md`.
+- O detalhamento para conferência manual está em `dados/conferencia.md`.
+
 ## Falta
 
-- **Etapa 4, passo 3:** os fatores alfa do PDF do CCF. O preferido é a seção 2.1.11
-  `CCW-MDP-FS`/`FR` (PDF 164–169, parte 2 do CCF). A alternativa genérica é 2.1.1 (PDF 38–58,
-  parte 1 do CCF). As notas da Rev. 1 estão nas PDF 15–20.
+- Conferir manualmente o `dados/conferencia.md` contra os PDFs.

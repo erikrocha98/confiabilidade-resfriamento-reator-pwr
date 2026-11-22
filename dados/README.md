@@ -93,3 +93,53 @@ Uma linha por grupo de falha de causa comum (modelo de fatores alfa).
 - Os `alfa_k` preenchidos devem somar aproximadamente 1 dentro do `tamanho_grupo`;
   se nao somarem, registrar o motivo em `observacao`.
 - `alfa_k` com `k > tamanho_grupo` fica vazio.
+
+---
+
+## Suposicoes da extracao (LEIA antes de usar os dados)
+
+Decisoes tomadas pelo grupo na extracao de 2026-11-21. O detalhamento de cada
+valor esta em `conferencia.md`; os parametros de cada modo de falha estao em
+`extracao_bruta.csv`; o criterio esta codificado em `scripts/montar_parametros.py`.
+
+1. **Uma linha por evento, todos os modos de falha combinados.** Cada evento
+   basico agrega todos os modos de falha aplicaveis do componente (ex.: MOV =
+   FTOC + SOP + ILS + ILL + ELS + ELL), considerados independentes e em serie:
+   `prob_missao = 1 - prod(1 - P_i)`.
+   - Consequencia: `tipo`, `distribuicao`, `param_alfa`, `param_beta`, `media`,
+     `p05`, `p95` e `unidade` ficam **vazios** em `parametros_eventos.csv`, porque
+     um evento mistura modos por demanda (Beta) e por hora (Gamma). Quem precisar
+     da incerteza (frente 4, Monte Carlo) deve amostrar **cada modo** a partir de
+     `extracao_bruta.csv` (linhas `tabela = Table 1`, codigos listados em
+     `codigo_inl`) e combinar como acima.
+2. **`prob_missao`** com `tempo_missao_h` de `config/parametros_globais.yaml`
+   (24 h): `P_i = media` para demanda e `P_i = 1 - exp(-lambda*t)` para taxa.
+3. **Versao especifica do CCW preferida a generica** quando o relatorio traz as
+   duas: MOV-SOP-CCW, MDP-FTS-CCW, MDP-FTR-CCW, HTX-PG-CCW (no lugar de HTX-LOHT).
+   MDP usa apenas os modos CCW (FTS/FTR) + ELS/ELL; os genericos standby/running
+   nao entram, para nao contar o mesmo modo duas vezes. MOV usa FTOC (combinado)
+   no lugar de FTO + FTC.
+4. **PIPE: comprimento de tubulacao por trem e uma SUPOSICAO.** O INL da a taxa
+   de vazamento de tubulacao **por hora-pe** (Table 1 e Table 177). O comprimento
+   usado foi o da Table 175 (INL/EXT-21-65055, p. A-121, PDF p. 180): **4008 pes
+   por planta** para o CCW de PWR (tubos >= 2 pol., estimativa do NUREG/CR-4407),
+   **dividido igualmente entre os 2 trens = 2004 pes por trem**. O relatorio nao da
+   o comprimento por trem nem do CCWS especifico deste estudo. Se o grupo tiver um
+   valor melhor, alterar `PES_CCW_PLANTA`/`PES_POR_TREM` em
+   `scripts/montar_parametros.py` e rodar o script de novo.
+5. **Parametrizacao da gama:** o `beta` do INL e a **taxa** (media = alfa/beta),
+   nao a escala. Vale para todas as linhas Gamma de `extracao_bruta.csv`.
+6. **STF** nao tem dados proprios no INL: o relatorio usa os dados de STL (STF e
+   STL tem valores identicos).
+7. **ELL/ILL** (vazamentos grandes) nao sao estimados de dados: sao ELS/ILS vezes
+   um multiplicador do NUREG/CR-6928, com alfa = 0,3 assumido pelo INL.
+8. **Fatores alfa (MDP, CCCG = 4):** medias da secao 2.1.11 (CCW) do
+   INL/EXT-21-62940 Rev. 1, para FTS e FTR. O relatorio nao distingue teste
+   escalonado/nao escalonado, por isso `teste_escalonado` esta vazio. Ha 0
+   eventos CCF no periodo; os fatores refletem a priori.
+9. **Indisponibilidade por teste e manutencao** (MDP-CCW, HTX-CCW, HDR-CCW) foi
+   extraida para `extracao_bruta.csv`, mas nao entra na tabela final porque a
+   arvore nao tem esses eventos.
+10. **Itens a conferir:** linhas com "conferir" em `observacao` (unidade da
+    MDP-FTS-CCW na Table 1; p05 da PIPE-OTHER-ELL) estao listadas no topo de
+    `conferencia.md`.

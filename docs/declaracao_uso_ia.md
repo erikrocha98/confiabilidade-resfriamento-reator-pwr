@@ -8,9 +8,11 @@ pull request em que o trabalho assistido por IA entra no repositorio.
 
 ## Principios adotados pelo grupo
 
-1. **Dados nunca vem de IA.** Taxas de falha, probabilidades, fatores alfa e
-   qualquer outro valor numerico sao extraidos manualmente dos relatorios do
-   INL, com `fonte` e `pagina_tabela` registrados. Ver `dados/fontes.md`.
+1. **Dados nunca sao inventados.** Taxas de falha, probabilidades, fatores alfa e
+   qualquer outro valor numerico vem dos relatorios do INL, com `fonte` e
+   `pagina_tabela` registrados (ver `dados/fontes.md`). A extracao foi feita com
+   IA usando scripts Python (uso #2) e conferida manualmente via
+   `dados/conferencia.md`.
 2. **Responsabilidade e humana.** Todo texto, codigo ou resultado gerado com
    auxilio de IA foi lido, conferido e, quando necessario, corrigido pelo
    integrante responsavel, que responde por ele.
@@ -21,7 +23,7 @@ pull request em que o trabalho assistido por IA entra no repositorio.
 | # | Data | Quem usou | Ferramenta (e versao/modelo) | Finalidade | Etapa / frente | Arquivos afetados | Conferencia feita |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | 2026-11-21 | [nome] | Claude Code (Anthropic, modelo Opus) | Geracao do esqueleto do repositorio: estrutura de pastas, READMEs, cabecalhos dos CSVs, codigo compartilhado (`ccws/arvore.py`, `ccws/dados.py`), script de validacao e testes. Nenhum valor numerico de confiabilidade foi gerado. | Preparacao / infraestrutura (todas as frentes) | estrutura inicial do repositorio (commit "Esqueleto inicial do projeto") | [preencher: quem revisou o codigo e os testes] |
-| 2 | | | | | | | |
+| 2 | 2026-11-21 | [nome] | Claude Code (Anthropic, modelo Opus 5.5) | Divisao dos PDFs do INL em partes de 100 paginas e **extracao dos parametros de confiabilidade com IA, usando scripts Python (pypdf + expressoes regulares)**: taxas/probabilidades e distribuicoes do INL/EXT-21-65055 (Tables 1, 2, 14, 35, 38, 41, 45, 131, 177, 181, 182, 183) e fatores alfa do INL/EXT-21-62940 Rev. 1 (secao 2.1.11, CCCG = 4). Montagem de `parametros_eventos.csv` e calculo de `prob_missao`. Nenhum valor foi estimado: celulas sem dado ficaram vazias com "nao encontrado". | Frente 2 (dados) | `scripts/dividir_pdf.py`, `scripts/montar_parametros.py`, `scripts/extracao/`, `dados/mapa_relatorio.md`, `dados/extracao_bruta.csv`, `dados/progresso_extracao.md`, `dados/parametros_eventos.csv`, `dados/fatores_alfa_ccf.csv`, `dados/conferencia.md`, `dados/README.md` (secao de suposicoes) | Automatica: cada valor extraido foi procurado de volta no texto da pagina de origem (0 falhas) e cruzado entre a Table 1 e o Apendice A (1 divergencia, marcada "conferir"); fatores alfa cruzados com a tabela-resumo de cada secao. **Manual: [preencher - quem conferiu `dados/conferencia.md` contra os PDFs]** |
 | 3 | | | | | | | |
 
 ## Como preencher
@@ -39,7 +41,7 @@ pull request em que o trabalho assistido por IA entra no repositorio.
 
 ## O que NAO foi feito com IA
 
-- Extracao dos parametros dos relatorios do INL (`dados/parametros_eventos.csv`,
-  `dados/fatores_alfa_ccf.csv`): feita manualmente, com conferencia pagina por pagina.
+- Escolha de valores: nenhum parametro foi estimado ou completado pela IA; ela
+  apenas transcreveu valores das tabelas do INL (ver uso #2).
 - [completar conforme o trabalho avanca: definicao da arvore de falhas, escolha
   dos cenarios de sensibilidade, conclusoes do relatorio, etc.]

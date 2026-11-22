@@ -1,16 +1,18 @@
 """Testes da carga e validacao dos dados (modulo ccws.dados).
 
-As tabelas em dados/ nascem vazias (so cabecalho) porque os valores sao
-extraidos manualmente dos relatorios do INL. Estes testes garantem que:
+As tabelas em dados/ foram preenchidas com valores extraidos dos relatorios do
+INL (ver docs/declaracao_uso_ia.md e dados/conferencia.md). Estes testes
+garantem que:
 
 - o cabecalho dos CSVs e exatamente o combinado com o grupo;
-- a carga funciona com as tabelas vazias;
+- todo valor numerico tem fonte e pagina de origem;
 - valores fora do dominio permitido sao recusados;
 - o cruzamento com a arvore aponta corretamente o que falta preencher.
 """
 
 from __future__ import annotations
 
+import pandas as pd
 import pytest
 
 from ccws.arvore import carregar_arvore
@@ -52,16 +54,32 @@ def test_carga_funciona_com_tabelas_vazias():
     assert alfa.empty or not alfa.empty
 
 
-def test_nenhum_valor_numerico_foi_inventado_no_repo():
-    # Regra da disciplina: o repo nao pode nascer com dados fabricados.
-    parametros = carregar_parametros_eventos()
-    assert len(parametros) == 0, (
-        "parametros_eventos.csv deveria estar vazio no esqueleto do projeto"
-    )
+def test_todo_valor_numerico_tem_fonte_e_pagina():
+    # Regra da disciplina: nenhum valor sem origem. Toda linha com algum numero
+    # precisa apontar o relatorio (fonte) e a pagina/tabela de onde saiu.
+    for tabela, numericas in (
+        (carregar_parametros_eventos(), ["param_alfa", "param_beta", "media", "p05", "p95", "prob_missao"]),
+        (carregar_fatores_alfa_ccf(), ["alfa_1", "alfa_2", "alfa_3", "alfa_4"]),
+    ):
+        com_numero = tabela[tabela[numericas].notna().any(axis=1)]
+        sem_fonte = com_numero[com_numero["fonte"].isna() | com_numero["pagina_tabela"].isna()]
+        assert sem_fonte.empty, f"linhas com valor numerico sem fonte/pagina: {list(sem_fonte.index + 2)}"
+
+
+def test_prob_missao_e_uma_probabilidade():
+    prob = carregar_parametros_eventos()["prob_missao"].dropna()
+    assert ((prob >= 0) & (prob <= 1)).all()
+
+
+def test_fatores_alfa_somam_aproximadamente_1():
+    # Convencao do dados/README.md: alfa_k preenchidos somam ~1 dentro do grupo.
     alfa = carregar_fatores_alfa_ccf()
-    assert len(alfa) == 0, (
-        "fatores_alfa_ccf.csv deveria estar vazio no esqueleto do projeto"
-    )
+    for _, linha in alfa.iterrows():
+        k = int(linha["tamanho_grupo"])
+        soma = sum(linha[f"alfa_{i}"] for i in range(1, k + 1))
+        assert soma == pytest.approx(1.0, abs=1e-3), linha["codigo_inl"]
+        for i in range(k + 1, 5):
+            assert pd.isna(linha[f"alfa_{i}"]), f"{linha['codigo_inl']}: alfa_{i} com k > tamanho_grupo"
 
 
 # ------------------------------------------------------------------- config
@@ -137,12 +155,13 @@ def test_linha_valida_e_aceita(tmp_path):
 
 
 # -------------------------------------------- cruzamento com a arvore
-def test_todos_os_eventos_da_arvore_estao_pendentes_no_esqueleto():
+def test_nenhum_evento_da_arvore_esta_pendente():
+    # Extracao concluida (Etapa 4): os 24 eventos basicos tem dados.
     arvore = carregar_arvore()
     parametros = carregar_parametros_eventos()
     pendentes = eventos_sem_dados(arvore.lista_eventos_basicos(), parametros)
-    assert sorted(pendentes) == sorted(arvore.lista_eventos_basicos())
-    assert len(pendentes) == 24
+    assert pendentes == []
+    assert len(arvore.lista_eventos_basicos()) == 24
 
 
 def test_evento_com_dado_sai_da_lista_de_pendentes(tmp_path):
