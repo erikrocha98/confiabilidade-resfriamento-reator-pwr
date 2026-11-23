@@ -35,6 +35,7 @@ a fracao de historias em que o CCWS perde a funcao de resfriamento.
 | `mc_convergencia.csv` | Curva de convergencia em grade logaritmica (`n_historias`, `n_falhas`, `estimativa`, `erro_padrao`, `erro_relativo`, `meia_largura_rel_ic95`, ICs). |
 | `mc_convergencia.png` | Grafico em 2 paineis: estimativa + IC 95% (Wilson) e erro relativo vs. tendencia teorica $N^{-1/2}$. |
 | `mc_dinamico_bombas.csv` | Comparacao do subsistema `BOMBAS_A` (ativa x cold standby x reparo se MTTR fornecido) em 24 h, 720 h e 8760 h. |
+| `mc_dinamico_bombas.png` | Grafico comparativo Ativa x Cold Standby em 24 h, 720 h e 8760 h (gerado por `dinamico.py`). |
 | `mc_dinamico_topo.csv` | Comparacao de `P(TOPO)` em `tempo_missao_h` entre redundancia ativa e bomba em espera. |
 
 Os arquivos de `resultados/` nao sao versionados; a pasta fica no repo via `.gitkeep`.
@@ -47,6 +48,9 @@ Frentes 1 (modelo) e 2 (dados).
 
 - `simulacao.py` - sorteio dos estados, avaliacao das historias, estimativa da probabilidade.
 - `convergencia.py` - curva de convergencia e justificativa do `n_simulacoes`.
+- `dinamico.py` - extensao de bomba em espera (standby) e motor DES de reparo parametrizado.
+- `relatorio_monte_carlo.md` - rascunho de texto (Materiais e Metodos + Resultados da simulacao).
+- `apresentacao_monte_carlo.md` - roteiro de slides e notas de fala da Frente 4.
 
 ## Decisao pendente desta frente: bomba reserva (spare)
 

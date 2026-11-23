@@ -32,8 +32,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
-import numpy as np
-import pandas as pd
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
 
 # Permite rodar o script diretamente (ex.: python monte_carlo/dinamico.py).
 RAIZ_REPO = Path(__file__).resolve().parent.parent
@@ -1039,6 +1043,140 @@ def rodar_topo_com_standby(
     }
 
 
+def grafico_bombas(df_bombas: pd.DataFrame, caminho: Path | None = None) -> Path:
+    """Salva o grafico comparativo Ativa x Cold Standby em ``monte_carlo/resultados/``."""
+    destino = (
+        Path(caminho)
+        if caminho is not None
+        else PASTA_RESULTADOS / "mc_dinamico_bombas.png"
+    )
+    destino.parent.mkdir(parents=True, exist_ok=True)
+
+    modelos = [
+        ("redundancia_ativa_sem_reparo", "Redundância ativa", "#1F4E79"),
+        ("cold_standby_principal_parte_t0", "Cold standby\n(principal parte em t=0)", "#E07A2B"),
+        ("cold_standby_principal_operando", "Cold standby\n(principal já operando)", "#2E7D32"),
+    ]
+    horizontes = sorted(df_bombas["horizonte_h"].unique())
+    rotulos_h = [
+        "24 h\n(missão base)" if h == 24.0
+        else ("720 h\n(30 dias)" if h == 720.0
+              else ("8.760 h\n(1 ano)" if h == 8760.0 else f"{h:g} h"))
+        for h in horizontes
+    ]
+
+    fig, (ax1, ax2) = plt.subplots(
+        1, 2, figsize=(11.5, 4.9), gridspec_kw={"width_ratios": [1.35, 1.0]}
+    )
+
+    x = np.arange(len(horizontes))
+    largura = 0.25
+
+    for idx_m, (chave, rotulo, cor) in enumerate(modelos):
+        sub = df_bombas[df_bombas["modelo_bombas"] == chave].set_index("horizonte_h")
+        vals_ref = [float(sub.loc[h, "p_analitica_ref"]) for h in horizontes]
+        vals_mc = [float(sub.loc[h, "p_falha_mc"]) for h in horizontes]
+        n_falhas = [int(sub.loc[h, "n_falhas"]) for h in horizontes]
+
+        pos = x + (idx_m - 1) * largura
+        ax1.bar(
+            pos,
+            vals_ref,
+            width=largura * 0.9,
+            color=cor,
+            alpha=0.82,
+            edgecolor="#222222",
+            linewidth=0.6,
+            label=rotulo.replace("\n", " "),
+        )
+        for px, pmc, kf in zip(pos, vals_mc, n_falhas):
+            if kf > 0:
+                ax1.scatter(
+                    [px], [pmc], color="white", edgecolor="#111111",
+                    s=36, zorder=5, linewidth=1.1,
+                )
+
+    ax1.scatter(
+        [], [], color="white", edgecolor="#111111", s=36, linewidth=1.1,
+        label="Estimativa MC (quando k > 0)",
+    )
+    if 24.0 in horizontes:
+        i24 = horizontes.index(24.0)
+        ax1.annotate(
+            "~11× menor",
+            xy=(i24 + largura, 2.35e-8),
+            xytext=(i24 + largura + 0.14, 1.3e-7),
+            ha="center",
+            fontsize=8.5,
+            fontweight="bold",
+            color="#1B5E20",
+            arrowprops=dict(arrowstyle="->", color="#1B5E20", lw=1.1),
+        )
+    if 8760.0 in horizontes:
+        i1y = horizontes.index(8760.0)
+        ax1.annotate(
+            "~2× menor",
+            xy=(i1y + largura, 1.57e-4),
+            xytext=(i1y + largura, 6.0e-4),
+            ha="center",
+            fontsize=8.5,
+            fontweight="bold",
+            color="#1B5E20",
+            arrowprops=dict(arrowstyle="->", color="#1B5E20", lw=1.0),
+        )
+
+    ax1.set_yscale("log")
+    ax1.set_ylim(2e-9, 2e-3)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(rotulos_h)
+    ax1.set_ylabel(r"Probabilidade de falha de $\mathrm{BOMBAS\_A}$")
+    ax1.set_title("Subsistema BOMBAS_A em três horizontes (sem reparo)")
+    ax1.grid(True, axis="y", which="both", linestyle=":", alpha=0.55)
+    ax1.legend(loc="upper left", fontsize=8.0, frameon=True)
+
+    # Painel direito: maior horizonte disponivel (escala linear com IC 95% Wilson)
+    h_max = horizontes[-1]
+    sub_max = df_bombas[df_bombas["horizonte_h"] == h_max].set_index("modelo_bombas")
+    x2 = np.arange(len(modelos))
+    p_mc = [float(sub_max.loc[k, "p_falha_mc"]) for k, _, _ in modelos]
+    p_ref = [float(sub_max.loc[k, "p_analitica_ref"]) for k, _, _ in modelos]
+    err_inf = [float(sub_max.loc[k, "p_falha_mc"] - sub_max.loc[k, "ic95_inf"]) for k, _, _ in modelos]
+    err_sup = [float(sub_max.loc[k, "ic95_sup"] - sub_max.loc[k, "p_falha_mc"]) for k, _, _ in modelos]
+    falhas_max = [int(sub_max.loc[k, "n_falhas"]) for k, _, _ in modelos]
+    cores2 = [c for _, _, c in modelos]
+
+    ax2.bar(
+        x2, p_mc, width=0.52, color=cores2, alpha=0.78, edgecolor="#222222",
+        linewidth=0.7, yerr=[err_inf, err_sup], capsize=5,
+        error_kw={"elinewidth": 1.3, "ecolor": "#222222"},
+        label="Monte Carlo + IC 95% Wilson",
+    )
+    ax2.scatter(
+        x2, p_ref, marker="D", s=48, color="#D62728", edgecolor="white",
+        linewidth=0.8, zorder=6, label="Referência analítica fechada",
+    )
+    ymax2 = max(max(p + s for p, s in zip(p_mc, err_sup)), max(p_ref)) * 1.28
+    for xi, pmc, esup, kf in zip(x2, p_mc, err_sup, falhas_max):
+        ax2.text(
+            xi, pmc + esup + ymax2 * 0.025, f"k = {kf}\n({pmc:.2E})",
+            ha="center", va="bottom", fontsize=8.2,
+        )
+
+    ax2.set_xticks(x2)
+    ax2.set_xticklabels([r for _, r, _ in modelos], fontsize=8.3)
+    ax2.set_ylim(0, ymax2)
+    ax2.ticklabel_format(axis="y", style="sci", scilimits=(-2, 3))
+    ax2.set_ylabel(rf"$P(\mathrm{{BOMBAS\_A}})$ em {h_max:,.0f} h")
+    ax2.set_title(f"Validação MC vs. Analítico em {h_max:,.0f} h")
+    ax2.grid(True, axis="y", linestyle=":", alpha=0.55)
+    ax2.legend(loc="upper right", fontsize=8.0, frameon=True)
+
+    fig.tight_layout()
+    fig.savefig(destino, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    return destino
+
+
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Simulacao dinamica de Monte Carlo (bomba em espera e reparo)."
@@ -1130,6 +1268,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     arq_topo = PASTA_RESULTADOS / "mc_dinamico_topo.csv"
     df_bombas.to_csv(arq_bombas, index=False)
     df_topo.to_csv(arq_topo, index=False)
+    arq_png = grafico_bombas(df_bombas)
 
     print("=" * 76)
     print("Frente 4 - Simulacao Dinamica (Bomba em Espera / Standby e Reparo DES)")
@@ -1162,6 +1301,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     print("-" * 76)
     print(f"Salvo em: {arq_bombas}")
     print(f"Salvo em: {arq_topo}")
+    print(f"Grafico:  {arq_png}")
     print("=" * 76)
 
 
