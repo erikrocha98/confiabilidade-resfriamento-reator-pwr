@@ -100,6 +100,6 @@ flowchart LR
 2. **Evento raro exige cuidado estatístico:** em $N = 10^6$ ($k = 11$), o IC de Wilson/Clopper-Pearson evita a distorção do Wald; precisão de 10% demanda $N \sim 10^7\text{–}3{,}5 \times 10^7$ (ou redução de variância).
 3. **Insight de engenharia do CCWS:** operar a segunda bomba em espera fria reduz em até **11×** (24 h) e **2×** (1 ano) a falha do bombeamento, mas no sistema completo em 24 h (sem CCF) o gargalo continua nos componentes em série do trem — onde manutenção e confiabilidade trazem maior ganho.
 
-### Notas de fala (Cauê)
+### Notas
 
 > "Fechando a parte de Monte Carlo com três mensagens: primeiro, a simulação reproduziu com consistência a árvore do CCWS e foi validada analiticamente em testes automatizados; segundo, mostramos quantitativamente o custo estatístico de simular eventos raros na casa de 10⁻⁵; e terceiro, o resultado físico principal é que, embora a bomba em espera melhore muito o subsistema de bombeamento, em missões de 24 horas o risco global do CCWS é dominado pelos componentes em série de cada trem, o que conversa diretamente com a análise de importância e sensibilidade das outras frentes."
