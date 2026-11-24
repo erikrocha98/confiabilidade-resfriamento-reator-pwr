@@ -13,9 +13,8 @@ O trabalho cobre: cortes minimos, probabilidade do evento topo no tempo de
 missao, medidas de importancia, simulacao de Monte Carlo, analise de
 sensibilidade e comparacao entre a solucao analitica e a simulacao.
 
-> **Estado atual:** esqueleto do projeto. A arvore de falhas esta definida e o
-> codigo compartilhado (`ccws/`) funciona; as tabelas de dados estao **vazias**
-> e as analises das frentes 3, 4 e 5 ainda nao estao implementadas.
+> **Estado atual:** arvore e dados de 24 h preenchidos; a frente 3 (solucao
+> analitica) esta implementada. As frentes 4 e 5 permanecem em desenvolvimento.
 
 ## Frentes de trabalho
 
@@ -96,12 +95,17 @@ Validacao dos dados (quais eventos da arvore ainda nao tem dados preenchidos):
 python scripts/validar_dados.py
 ```
 
-Analises (ainda nao implementadas - os scripts levantam `NotImplementedError`):
+Solucao analitica:
 
 ```bash
 python analitico/cortes_minimos.py
 python analitico/probabilidade_topo.py
 python analitico/importancia.py
+```
+
+Analises ainda em desenvolvimento:
+
+```bash
 python monte_carlo/simulacao.py
 python monte_carlo/convergencia.py
 python sensibilidade/rodar_cenarios.py
